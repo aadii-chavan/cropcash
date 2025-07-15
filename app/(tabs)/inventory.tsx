@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Plus, Package, Eye, CreditCard as Edit, Trash2, AlertTriangle, TrendingDown } from 'lucide-react-native';
+import { Plus, Package, Eye, CreditCard as Edit, Trash2, TriangleAlert as AlertTriangle, TrendingDown } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 
 export default function InventoryPage() {
