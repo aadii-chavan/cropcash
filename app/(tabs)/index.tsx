@@ -1,14 +1,25 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Pressable, Modal } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Pressable, Modal, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { Bell, ChevronDown, Settings, Coins, CreditCard, TrendingUp, Wheat, Package, Users, Plus, Eye, TriangleAlert as AlertTriangle, CloudRain, Clock } from 'lucide-react-native';
+import { Bell, ChevronDown, Settings, Coins, CreditCard, TrendingUp, Wheat, Package, Users, Plus, Eye, TriangleAlert as AlertTriangle, CloudRain, Clock, DollarSign, TrendingDown } from 'lucide-react-native';
 import { useTheme } from '@/contexts/ThemeContext';
 
 export default function HomePage() {
   const { colors } = useTheme();
   const [selectedLanguage, setSelectedLanguage] = useState('English');
   const [showLanguageModal, setShowLanguageModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [selectedPlot, setSelectedPlot] = useState(null);
+  const [addType, setAddType] = useState(''); // 'income', 'expense', 'inventory'
+  
+  // Form states
+  const [amount, setAmount] = useState('');
+  const [description, setDescription] = useState('');
+  const [category, setCategory] = useState('');
+  const [itemName, setItemName] = useState('');
+  const [quantity, setQuantity] = useState('');
+  const [unit, setUnit] = useState('');
 
   const languages = ['English', 'Hindi', 'Marathi'];
 
@@ -48,6 +59,126 @@ export default function HomePage() {
       default: return '#4B5563';
     }
   };
+
+  const handleAddEntry = (plot, type) => {
+    setSelectedPlot(plot);
+    setAddType(type);
+    setShowAddModal(true);
+  };
+
+  const resetForm = () => {
+    setAmount('');
+    setDescription('');
+    setCategory('');
+    setItemName('');
+    setQuantity('');
+    setUnit('');
+  };
+
+  const handleSubmitEntry = () => {
+    if (addType === 'inventory') {
+      if (!itemName.trim() || !quantity.trim() || !unit.trim()) {
+        alert('Please fill in all required fields');
+        return;
+      }
+    } else {
+      if (!amount.trim() || !description.trim()) {
+        alert('Please fill in all required fields');
+        return;
+      }
+    }
+
+    // Here you would typically save the data to your backend or state management
+    const entryData = {
+      plotId: selectedPlot.id,
+      plotName: selectedPlot.name,
+      type: addType,
+      ...(addType === 'inventory' ? {
+        itemName: itemName.trim(),
+        quantity: parseInt(quantity),
+        unit: unit.trim(),
+        description: description.trim()
+      } : {
+        amount: parseFloat(amount),
+        description: description.trim(),
+        category: category.trim() || 'General'
+      }),
+      date: new Date().toISOString().split('T')[0]
+    };
+
+    console.log('New entry:', entryData);
+    alert(`${addType.charAt(0).toUpperCase() + addType.slice(1)} entry added successfully to ${selectedPlot.name}!`);
+    
+    setShowAddModal(false);
+    resetForm();
+  };
+
+  const getAddModalTitle = () => {
+    switch (addType) {
+      case 'income': return 'Add Income Entry';
+      case 'expense': return 'Add Expense Entry';
+      case 'inventory': return 'Add Inventory Item';
+      default: return 'Add Entry';
+    }
+  };
+
+  const AddTypeSelector = () => (
+    <View style={styles.addTypeSelector}>
+      <Text style={[styles.addTypeSelectorTitle, { color: colors.text }]}>Select Entry Type</Text>
+      <View style={styles.addTypeOptions}>
+        <TouchableOpacity
+          style={[
+            styles.addTypeOption,
+            { backgroundColor: colors.background, borderColor: colors.border },
+            addType === 'income' && { backgroundColor: `${colors.success}15`, borderColor: colors.success }
+          ]}
+          onPress={() => setAddType('income')}
+        >
+          <TrendingUp size={20} color={addType === 'income' ? colors.success : colors.textSecondary} />
+          <Text style={[
+            styles.addTypeOptionText,
+            { color: addType === 'income' ? colors.success : colors.textSecondary }
+          ]}>
+            Income
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[
+            styles.addTypeOption,
+            { backgroundColor: colors.background, borderColor: colors.border },
+            addType === 'expense' && { backgroundColor: `${colors.error}15`, borderColor: colors.error }
+          ]}
+          onPress={() => setAddType('expense')}
+        >
+          <TrendingDown size={20} color={addType === 'expense' ? colors.error : colors.textSecondary} />
+          <Text style={[
+            styles.addTypeOptionText,
+            { color: addType === 'expense' ? colors.error : colors.textSecondary }
+          ]}>
+            Expense
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[
+            styles.addTypeOption,
+            { backgroundColor: colors.background, borderColor: colors.border },
+            addType === 'inventory' && { backgroundColor: `${colors.warning}15`, borderColor: colors.warning }
+          ]}
+          onPress={() => setAddType('inventory')}
+        >
+          <Package size={20} color={addType === 'inventory' ? colors.warning : colors.textSecondary} />
+          <Text style={[
+            styles.addTypeOptionText,
+            { color: addType === 'inventory' ? colors.warning : colors.textSecondary }
+          ]}>
+            Inventory
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -128,7 +259,10 @@ export default function HomePage() {
                 </View>
               </View>
               <View style={styles.plotActions}>
-                <TouchableOpacity style={[styles.plotActionButton, { backgroundColor: colors.background, borderColor: colors.border }]}>
+                <TouchableOpacity 
+                  style={[styles.plotActionButton, { backgroundColor: colors.background, borderColor: colors.border }]}
+                  onPress={() => handleAddEntry(plot, '')}
+                >
                   <Plus size={16} color={colors.success} />
                   <Text style={[styles.plotActionText, { color: colors.textSecondary }]}>Add Entry</Text>
                 </TouchableOpacity>
@@ -196,6 +330,135 @@ export default function HomePage() {
             ))}
           </View>
         </Pressable>
+      </Modal>
+
+      {/* Add Entry Modal */}
+      <Modal
+        visible={showAddModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowAddModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>
+              {addType ? getAddModalTitle() : 'Add Entry'}
+            </Text>
+            
+            {selectedPlot && (
+              <View style={[styles.selectedPlotInfo, { backgroundColor: colors.background }]}>
+                <Text style={[styles.selectedPlotName, { color: colors.text }]}>{selectedPlot.name}</Text>
+                <Text style={[styles.selectedPlotDetails, { color: colors.textSecondary }]}>
+                  {selectedPlot.crop} • {selectedPlot.size}
+                </Text>
+              </View>
+            )}
+
+            {!addType ? (
+              <AddTypeSelector />
+            ) : (
+              <View>
+                {addType === 'inventory' ? (
+                  <>
+                    <View style={styles.inputGroup}>
+                      <Text style={[styles.inputLabel, { color: colors.text }]}>Item Name</Text>
+                      <TextInput
+                        style={[styles.textInput, { backgroundColor: colors.background, borderColor: colors.border, color: colors.text }]}
+                        value={itemName}
+                        onChangeText={setItemName}
+                        placeholder="e.g., Urea Fertilizer, Wheat Seeds"
+                        placeholderTextColor={colors.textSecondary}
+                      />
+                    </View>
+
+                    <View style={styles.inputRow}>
+                      <View style={[styles.inputGroup, { flex: 2 }]}>
+                        <Text style={[styles.inputLabel, { color: colors.text }]}>Quantity</Text>
+                        <TextInput
+                          style={[styles.textInput, { backgroundColor: colors.background, borderColor: colors.border, color: colors.text }]}
+                          value={quantity}
+                          onChangeText={setQuantity}
+                          placeholder="100"
+                          placeholderTextColor={colors.textSecondary}
+                          keyboardType="numeric"
+                        />
+                      </View>
+                      <View style={[styles.inputGroup, { flex: 1, marginLeft: 12 }]}>
+                        <Text style={[styles.inputLabel, { color: colors.text }]}>Unit</Text>
+                        <TextInput
+                          style={[styles.textInput, { backgroundColor: colors.background, borderColor: colors.border, color: colors.text }]}
+                          value={unit}
+                          onChangeText={setUnit}
+                          placeholder="kg"
+                          placeholderTextColor={colors.textSecondary}
+                        />
+                      </View>
+                    </View>
+                  </>
+                ) : (
+                  <>
+                    <View style={styles.inputGroup}>
+                      <Text style={[styles.inputLabel, { color: colors.text }]}>Amount (₹)</Text>
+                      <TextInput
+                        style={[styles.textInput, { backgroundColor: colors.background, borderColor: colors.border, color: colors.text }]}
+                        value={amount}
+                        onChangeText={setAmount}
+                        placeholder="5000"
+                        placeholderTextColor={colors.textSecondary}
+                        keyboardType="numeric"
+                      />
+                    </View>
+
+                    <View style={styles.inputGroup}>
+                      <Text style={[styles.inputLabel, { color: colors.text }]}>Category</Text>
+                      <TextInput
+                        style={[styles.textInput, { backgroundColor: colors.background, borderColor: colors.border, color: colors.text }]}
+                        value={category}
+                        onChangeText={setCategory}
+                        placeholder={addType === 'income' ? 'e.g., Crop Sale, Subsidy' : 'e.g., Seeds, Fertilizer, Labor'}
+                        placeholderTextColor={colors.textSecondary}
+                      />
+                    </View>
+                  </>
+                )}
+
+                <View style={styles.inputGroup}>
+                  <Text style={[styles.inputLabel, { color: colors.text }]}>Description</Text>
+                  <TextInput
+                    style={[styles.textInput, styles.textArea, { backgroundColor: colors.background, borderColor: colors.border, color: colors.text }]}
+                    value={description}
+                    onChangeText={setDescription}
+                    placeholder={addType === 'inventory' ? 'Additional notes (optional)' : 'Enter description'}
+                    placeholderTextColor={colors.textSecondary}
+                    multiline
+                    numberOfLines={3}
+                  />
+                </View>
+              </View>
+            )}
+
+            <View style={styles.modalActions}>
+              <TouchableOpacity
+                style={[styles.cancelButton, { backgroundColor: colors.background }]}
+                onPress={() => {
+                  setShowAddModal(false);
+                  setAddType('');
+                  resetForm();
+                }}
+              >
+                <Text style={[styles.cancelButtonText, { color: colors.textSecondary }]}>Cancel</Text>
+              </TouchableOpacity>
+              {addType && (
+                <TouchableOpacity 
+                  style={[styles.saveButton, { backgroundColor: colors.primary }]}
+                  onPress={handleSubmitEntry}
+                >
+                  <Text style={styles.saveButtonText}>Add Entry</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        </View>
       </Modal>
     </SafeAreaView>
   );
@@ -433,5 +696,92 @@ const styles = StyleSheet.create({
   },
   languageOptionText: {
     fontSize: 16,
+  },
+  selectedPlotInfo: {
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  selectedPlotName: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  selectedPlotDetails: {
+    fontSize: 14,
+  },
+  addTypeSelector: {
+    marginBottom: 16,
+  },
+  addTypeSelectorTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 12,
+  },
+  addTypeOptions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  addTypeOption: {
+    flex: 1,
+    flexDirection: 'column',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 2,
+  },
+  addTypeOptionText: {
+    fontSize: 14,
+    fontWeight: '500',
+    marginTop: 8,
+  },
+  inputGroup: {
+    marginBottom: 16,
+  },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+  },
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    marginBottom: 8,
+  },
+  textInput: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    fontSize: 16,
+  },
+  textArea: {
+    height: 80,
+    textAlignVertical: 'top',
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 24,
+  },
+  cancelButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  saveButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  saveButtonText: {
+    fontSize: 16,
+    color: '#FFFFFF',
+    fontWeight: '500',
   },
 });
