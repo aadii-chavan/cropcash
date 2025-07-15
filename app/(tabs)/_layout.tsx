@@ -15,13 +15,18 @@ export default function TabLayout() {
           backgroundColor: colors.surface,
           borderTopWidth: 1,
           borderTopColor: colors.border,
-          paddingBottom: 8,
-          paddingTop: 8,
-          height: 60,
+          paddingBottom: 12,
+          paddingTop: 12,
+          height: 80,
         },
         tabBarLabelStyle: {
-          fontSize: 12,
+          fontSize: 11,
           fontWeight: '500',
+          marginTop: 4,
+          marginBottom: 0,
+        },
+        tabBarIconStyle: {
+          marginBottom: 2,
         },
       }}>
       <Tabs.Screen
@@ -29,7 +34,7 @@ export default function TabLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ size, color }) => (
-            <Home size={size} color={color} />
+            <Home size={20} color={color} />
           ),
         }}
       />
@@ -38,7 +43,7 @@ export default function TabLayout() {
         options={{
           title: 'Plots',
           tabBarIcon: ({ size, color }) => (
-            <Wheat size={size} color={color} />
+            <Wheat size={20} color={color} />
           ),
         }}
       />
@@ -47,7 +52,7 @@ export default function TabLayout() {
         options={{
           title: 'Inventory',
           tabBarIcon: ({ size, color }) => (
-            <Package size={size} color={color} />
+            <Package size={20} color={color} />
           ),
         }}
       />
@@ -56,7 +61,7 @@ export default function TabLayout() {
         options={{
           title: 'Labor',
           tabBarIcon: ({ size, color }) => (
-            <Users size={size} color={color} />
+            <Users size={20} color={color} />
           ),
         }}
       />
@@ -65,7 +70,7 @@ export default function TabLayout() {
         options={{
           title: 'Profile',
           tabBarIcon: ({ size, color }) => (
-            <User size={size} color={color} />
+            <User size={20} color={color} />
           ),
         }}
       />
